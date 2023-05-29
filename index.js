@@ -29,7 +29,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+app.use(cors({origin:["http://localhost:3000","https://malek-memories-app.onrender.com"]}));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* FILE STORAGE */
@@ -40,9 +40,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     console.log(file);
-    const fileName = file.originalname.split(".")[0]; // Extract the name without extension
-    // Extract the file extension
-    cb(null, `${fileName}`);
+    const fileName = file.originalname; // Keep the original file name
+    cb(null, fileName);
   },
 });
 
@@ -53,8 +52,6 @@ function uploadImage(req, res, next) {
     if (err) {
       return next(err);
     }
-    // req.body.image = req.file.path;
-    // next();
 
     // Check if 'req.file' is undefined, indicating no file was uploaded
     if (!req.file) {
@@ -62,12 +59,13 @@ function uploadImage(req, res, next) {
       return next();
     }
 
-    // Set the uploaded image file path to 'req.body.image'
+    // Set the uploaded image file path to 'req.body.picturePath'
     console.log(req.file.path);
     req.body.picturePath = req.file.originalname;
     next();
   });
 }
+
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", uploadImage, register);
